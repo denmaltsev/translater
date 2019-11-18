@@ -72,6 +72,7 @@ public class TranslateController {
 
     //    Запрос к сервису
     private static String request (String url) throws IOException {
+
         URL nUrl = new URL(url);
 
         URLConnection connection = nUrl.openConnection();
@@ -119,6 +120,7 @@ public class TranslateController {
 //        Gson gson = new Gson();
 //        SupportedLanguagesDto supportedLangs = gson.fromJson(langs, SupportedLanguagesDto.class);
         if (operation.equalsIgnoreCase("get_lang")) {
+
             return stringToMap(request(API_URL_GET_SUPPORTED_LANG + "?key=" + API_KEY + "&ui=ru"));
         } else {
             if (operation.equalsIgnoreCase("tr")) {
