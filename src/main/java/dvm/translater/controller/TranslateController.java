@@ -3,10 +3,7 @@ package dvm.translater.controller;
 import lombok.Getter;
 import org.springframework.boot.json.BasicJsonParser;
 import org.springframework.boot.json.JsonParser;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -30,7 +27,7 @@ public class TranslateController {
 
     private static final String API_KEY = "trnsl.1.1.20191116T081438Z.4e2042ca1d0c4bf0.5e3288d242c52625f6941daad238cfb4ce79c2cd";
     private static final String API_URL_GET_SUPPORTED_LANG = "https://translate.yandex.net/api/v1.5/tr.json/getLangs";
-    private static final String API_URL_TRANSLATE = "https://translate.yandex.net/api/v1.5/tr.json/translate";
+    private static final String API_URL_TRANSLATE = "https://translate.yandex.net/api/v1.5/tr.json/translate?key=%s&text=%s&lang=%s-%s";
     private static final String API_URL_LAG_DETECT = "https://translate.yandex.net/api/v1.5/tr.json/detect";
 
 //    private String apiUrl="https://translate.yandex.net/api/v1.5/tr.json";
@@ -54,8 +51,8 @@ public class TranslateController {
         HttpURLConnection connection;
         try {
             connection = (HttpURLConnection) new URL(url).openConnection();
-//            connection.setConnectTimeout(timeOut);
-//            connection.setReadTimeout(timeOut);
+            connection.setConnectTimeout(timeOut);
+            connection.setReadTimeout(timeOut);
             connection.setRequestMethod("GET");
             int responce = connection.getResponseCode();
 
@@ -96,25 +93,10 @@ public class TranslateController {
         return jsonMap;
     }
 
-    @GetMapping("{supportLanguages}")
-    public Map <String, Object> getSupportedLanguages(@PathVariable String supportLanguages) throws IOException {
-//        Map<String, Object> langs = request(url + "?key=" + key + "&ui=ru");
-//        String langs = request(API_URL_GET_SUPPORTED_LANG + "?key=" + API_KEY + "&ui=ru");
-//
-//        Gson gson = new Gson();
-//        SupportedLanguagesDto supportedLangs = gson.fromJson(langs, SupportedLanguagesDto.class);
-
-        return stringToMap(request(API_URL_GET_SUPPORTED_LANG + "?key=" + API_KEY + "&ui=ru"));
-    }
-
-
     @GetMapping
-//    public List<Map<String, String>> langList () {
-//        return languageList;
-//    }
     public String checkServiceAvailable() {
 
-        if (pingHost("http://ya.ru", 80, 100)) {
+        if (pingHost("http://ya.ru", 80, 300)) {
             serviceAvailable = true;
             return MESSAGE_SERVICE_AVAILABLE;
         } else {
@@ -123,4 +105,36 @@ public class TranslateController {
         }
 
     }
+
+    @GetMapping("{operation}")
+    public Map <String, Object> getSupportedLanguages(@PathVariable String operation,
+                                                      @RequestParam (name = "src", required = false) String src,
+                                                      @RequestParam (name = "dst", required = false) String dst,
+                                                      @RequestParam (name = "text", required = false) String text
+
+    ) throws IOException {
+//        Map<String, Object> langs = request(url + "?key=" + key + "&ui=ru");
+//        String langs = request(API_URL_GET_SUPPORTED_LANG + "?key=" + API_KEY + "&ui=ru");
+//
+//        Gson gson = new Gson();
+//        SupportedLanguagesDto supportedLangs = gson.fromJson(langs, SupportedLanguagesDto.class);
+        if (operation.equalsIgnoreCase("get_lang")) {
+            return stringToMap(request(API_URL_GET_SUPPORTED_LANG + "?key=" + API_KEY + "&ui=ru"));
+        } else {
+            if (operation.equalsIgnoreCase("tr")) {
+                return stringToMap(request(String.format(API_URL_TRANSLATE, API_KEY, text, src, dst)));
+            }
+        }
+
+        return stringToMap("{res:'Operation not found!'}");
+    }
+
+//    @GetMapping("{tr}")
+//    public Map<String, Object> translate(@PathVariable String tr,
+//                                         @RequestParam(name = "src", required = true) String src,
+//                                         @RequestParam(name = "dest", required = true) String dest,
+//                                         @RequestParam(name = "text", required = true) String text
+//    ) throws IOException {
+//        return stringToMap(request(String.format(API_URL_TRANSLATE, API_KEY, text, src, dest)));
+//    };
 }
