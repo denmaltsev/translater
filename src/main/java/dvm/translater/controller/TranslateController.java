@@ -94,7 +94,7 @@ public class TranslateController {
         return jsonMap;
     }
 
-    @GetMapping
+    @GetMapping(value = "/")
     public String checkServiceAvailable() {
 
         if (pingHost("http://ya.ru", 80, 300)) {
@@ -107,36 +107,17 @@ public class TranslateController {
 
     }
 
-    @GetMapping("{operation}")
-    public Map <String, Object> getSupportedLanguages(@PathVariable String operation,
-                                                      @RequestParam (name = "src", required = false) String src,
-                                                      @RequestParam (name = "dst", required = false) String dst,
-                                                      @RequestParam (name = "text", required = false) String text
-
-    ) throws IOException {
-//        Map<String, Object> langs = request(url + "?key=" + key + "&ui=ru");
-//        String langs = request(API_URL_GET_SUPPORTED_LANG + "?key=" + API_KEY + "&ui=ru");
-//
-//        Gson gson = new Gson();
-//        SupportedLanguagesDto supportedLangs = gson.fromJson(langs, SupportedLanguagesDto.class);
-        if (operation.equalsIgnoreCase("get_lang")) {
-
-            return stringToMap(request(API_URL_GET_SUPPORTED_LANG + "?key=" + API_KEY + "&ui=ru"));
-        } else {
-            if (operation.equalsIgnoreCase("tr")) {
-                return stringToMap(request(String.format(API_URL_TRANSLATE, API_KEY, text, src, dst)));
-            }
-        }
-
-        return stringToMap("{res:'Operation not found!'}");
+        @GetMapping(value = "/get_lang")
+    public Map <String, Object> getSupportedLanguages() throws IOException {
+        return stringToMap(request(API_URL_GET_SUPPORTED_LANG + "?key=" + API_KEY + "&ui=ru"));
     }
 
-//    @GetMapping("{tr}")
-//    public Map<String, Object> translate(@PathVariable String tr,
-//                                         @RequestParam(name = "src", required = true) String src,
-//                                         @RequestParam(name = "dest", required = true) String dest,
-//                                         @RequestParam(name = "text", required = true) String text
-//    ) throws IOException {
-//        return stringToMap(request(String.format(API_URL_TRANSLATE, API_KEY, text, src, dest)));
-//    };
+    @GetMapping(value = "/do")
+    public Map <String, Object> getSupportedLanguages(
+            @RequestParam (name = "src") String src,
+            @RequestParam (name = "dst") String dst,
+            @RequestParam (name = "text") String text
+    ) throws IOException {
+        return stringToMap(request(String.format(API_URL_TRANSLATE, API_KEY, text, src, dst)));
+    }
 }
