@@ -26,16 +26,9 @@ public class TranslateController {
     private static final String MESSAGE_SERVICE_UNAVAILABLE = "Сервис не доступен";
 
     private static final String API_KEY = "trnsl.1.1.20191116T081438Z.4e2042ca1d0c4bf0.5e3288d242c52625f6941daad238cfb4ce79c2cd";
-    private static final String API_URL_GET_SUPPORTED_LANG = "https://translate.yandex.net/api/v1.5/tr.json/getLangs";
+    private static final String API_URL_GET_SUPPORTED_LANG = "https://translate.yandex.net/api/v1.5/tr.json/getLangs?key=%s&ui=%s";
     private static final String API_URL_TRANSLATE = "https://translate.yandex.net/api/v1.5/tr.json/translate?key=%s&text=%s&lang=%s-%s";
-    private static final String API_URL_LAG_DETECT = "https://translate.yandex.net/api/v1.5/tr.json/detect";
-
-//    private String apiUrl="https://translate.yandex.net/api/v1.5/tr.json";
-
-//    https://translate.yandex.net/api/v1.5/tr.json/getLangs
-//            ? [key=<API-ключ>]
-//            & [ui=<код языка>]
-//            & [callback=<имя callback-функции>]
+    private static final String API_URL_LAG_DETECT = "https://translate.yandex.net/api/v1.5/tr.json/detect?key=%s&text='%s'&hint=en,ru";
 
     private boolean serviceAvailable = false;
 
@@ -54,21 +47,14 @@ public class TranslateController {
             connection.setConnectTimeout(timeOut);
             connection.setReadTimeout(timeOut);
             connection.setRequestMethod("GET");
-            int responce = connection.getResponseCode();
+            int response = connection.getResponseCode();
 
-            return (200 <= responce && responce <= 399);
+            return (200 <= response && response <= 399);
         } catch (IOException e) {
             e.printStackTrace();
             return false;
         }
-//        try (Socket socket = new Socket()) {
-//            socket.connect(new InetSocketAddress(host, port), timeOut);
-//            return socket.isConnected();
-//        } catch (IOException e) {
-//            return false;
-//        }
     }
-
 
     //    Запрос к сервису
     private static String request (String url) throws IOException {
@@ -104,20 +90,41 @@ public class TranslateController {
             serviceAvailable = false;
             return MESSAGE_SERVICE_UNAVAILABLE;
         }
-
     }
 
-        @GetMapping(value = "/get_lang")
+//    https://translate.yandex.net/api/v1.5/tr.json/getLangs
+//            ? [key=<API-ключ>]
+//            & [ui=<код языка>]
+//            & [callback=<имя callback-функции>]
+    @GetMapping(value = "/get_lang")
     public Map <String, Object> getSupportedLanguages() throws IOException {
-        return stringToMap(request(API_URL_GET_SUPPORTED_LANG + "?key=" + API_KEY + "&ui=ru"));
+        return stringToMap(request(String.format(API_URL_GET_SUPPORTED_LANG,API_KEY, "ru")));
     }
 
+//    https://translate.yandex.net/api/v1.5/tr.json/translate
+//            ? [key=<API-ключ>]
+//            & [text=<переводимый текст>]
+//            & [lang=<направление перевода>]
+//            & [format=<формат текста>]
+//            & [options=<опции перевода>]
+//            & [callback=<имя callback-функции>]
     @GetMapping(value = "/do")
-    public Map <String, Object> getSupportedLanguages(
+    public Map <String, Object> doTranslate(
             @RequestParam (name = "src") String src,
             @RequestParam (name = "dst") String dst,
             @RequestParam (name = "text") String text
     ) throws IOException {
         return stringToMap(request(String.format(API_URL_TRANSLATE, API_KEY, text, src, dst)));
     }
+
+//    https://translate.yandex.net/api/v1.5/tr.json/detect
+//            ? [key=<API-ключ>]
+//            & text=<текст>
+//            & [hint=<список вероятных языков текста>]
+//            & [callback=<имя callback-функции>]
+    @GetMapping(value = "/detect")
+    public Map <String, Object> detectLanguage (@RequestParam (name = "text") String text) throws IOException {
+        return stringToMap(request(String.format(API_URL_LAG_DETECT, API_KEY, text)));
+    }
+
 }
