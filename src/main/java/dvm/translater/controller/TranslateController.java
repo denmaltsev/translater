@@ -1,5 +1,6 @@
 package dvm.translater.controller;
 
+//import dvm.translater.domain.Languages;
 import lombok.Getter;
 import org.springframework.boot.json.BasicJsonParser;
 import org.springframework.boot.json.JsonParser;
@@ -12,6 +13,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,17 +31,33 @@ public class TranslateController {
     private static final String API_KEY = "trnsl.1.1.20191116T081438Z.4e2042ca1d0c4bf0.5e3288d242c52625f6941daad238cfb4ce79c2cd";
     private static final String API_URL_GET_SUPPORTED_LANG = "https://translate.yandex.net/api/v1.5/tr.json/getLangs?key=%s&ui=%s";
     private static final String API_URL_TRANSLATE = "https://translate.yandex.net/api/v1.5/tr.json/translate?key=%s&text=%s&lang=%s-%s";
-    private static final String API_URL_LAG_DETECT = "https://translate.yandex.net/api/v1.5/tr.json/detect?key=%s&text='%s'&hint=en,ru";
+    private static final String API_URL_LAG_DETECT = "https://translate.yandex.net/api/v1.5/tr.json/detect?key=%s&text=%s&hint=en,ru";
 
     private boolean serviceAvailable = false;
 
-    private List<Map <String, String>> languageList = new ArrayList<Map<String, String>>() {{
-        add(new HashMap<String, String>() {{ put("lang", "ru"); put("desc", "Russian"); }});
-        add(new HashMap<String, String>() {{ put("lang", "en"); put("desc", "English"); }});
-        add(new HashMap<String, String>() {{ put("lang", "sl"); put("desc", "Slovenian"); }});
+    private List<Map <String, String>> languageList = new ArrayList<>() {{
+        add(new HashMap<>() {{
+            put("lang", "ru");
+            put("desc", "Russian");
+        }});
+        add(new HashMap<>() {{
+            put("lang", "en");
+            put("desc", "English");
+        }});
+        add(new HashMap<>() {{
+            put("lang", "sl");
+            put("desc", "Slovenian");
+        }});
     }};
 
-//    Проверяем доступность сервиса переводчика
+//    private final LanguagesRepo languagesRepo;
+
+//    @Autowired
+//    public TranslateController(LanguagesRepo languagesRepo) {
+//        this.languagesRepo = languagesRepo;
+//    }
+
+    //    Проверяем доступность сервиса переводчика
     private static boolean pingHost (String url, int port, int timeOut) {
 
         HttpURLConnection connection;
@@ -97,8 +116,11 @@ public class TranslateController {
 //            & [ui=<код языка>]
 //            & [callback=<имя callback-функции>]
     @GetMapping(value = "/get_lang")
-    public Map <String, Object> getSupportedLanguages() throws IOException {
-        return stringToMap(request(String.format(API_URL_GET_SUPPORTED_LANG,API_KEY, "ru")));
+    public List<Map<String, String>> getSupportedLanguages() {
+
+        return languageList;
+//        return languagesRepo.findAll();
+//        return stringToMap(request(String.format(API_URL_GET_SUPPORTED_LANG,API_KEY, "ru")));
     }
 
 //    https://translate.yandex.net/api/v1.5/tr.json/translate
@@ -114,7 +136,8 @@ public class TranslateController {
             @RequestParam (name = "dst") String dst,
             @RequestParam (name = "text") String text
     ) throws IOException {
-        return stringToMap(request(String.format(API_URL_TRANSLATE, API_KEY, text, src, dst)));
+//        String encodedText = URLEncoder.encode(text, StandardCharsets.UTF_8);
+        return stringToMap(request(String.format(API_URL_TRANSLATE, API_KEY, URLEncoder.encode(text, StandardCharsets.UTF_8), src, dst)));
     }
 
 //    https://translate.yandex.net/api/v1.5/tr.json/detect
@@ -122,7 +145,7 @@ public class TranslateController {
 //            & text=<текст>
 //            & [hint=<список вероятных языков текста>]
 //            & [callback=<имя callback-функции>]
-    @GetMapping(value = "/detect")
+    @PostMapping(value = "/detect")
     public Map <String, Object> detectLanguage (@RequestParam (name = "text") String text) throws IOException {
         return stringToMap(request(String.format(API_URL_LAG_DETECT, API_KEY, text)));
     }
