@@ -16,7 +16,7 @@ Vue.component('translate-result', {
               '</div>'
 });
 
-Vue.component('translate-from', {
+Vue.component('translate', {
     // props:[ 'text', 'langFrom', 'langTo', 'translatedText' ],
     props:[ 'langFrom', 'langTo' ],
     data: function() {
@@ -37,66 +37,53 @@ Vue.component('translate-from', {
               '</div>',
     methods: {
             translate: function() {
-                let text = {text: this.text};
-                let langFrom = {langFrom: this.langFrom};
-                let langTo = {langTo: this.langTo};
-                let translatedText = {translatedText: this.translatedText};
-
-                // console.log(text);
-                // console.log(langFrom);
-                // console.log(langTo);
-
                 translateApi.do( {src: this.langFrom, dst: this.langTo, text: this.text}).then(result =>
-                    result.json().then(data => {
-                                                    this.translatedText = data.text
-                                               }
-                                      )
+                    result.json().then(data => {this.translatedText = data.text})
                 )
-
             }
-        },
-    // computed: {
-    //     textInput: {
-    //         get: function() {
-    //             return this.text.trim();
-    //         },
-    //         set: function( newValue ) {
-    //             this.$emit('update:text', newValue)
-    //         }
-    //     }
-    // }
+    }
 });
 
-Vue.component('languages', {
-  props: ['supportedLanguages', 'langFrom', 'langTo'],
+
+Vue.component('language-form', {
+  props: [ 'langFrom', 'langTo' ],
   data: function() {
       return {
           langFromLocal: this.langFrom,
-          langToLocal: this.langTo
+          langToLocal: this.langTo,
+          Languages: [],
+          LanguagesTo: []
       }
   },
   template: '<div>' +
-              '<select v-model="langFromLocal">' +
-              '<option v-for="lang in supportedLanguages" v-bind:value="lang.code"> {{ lang.text }} </option>' +
-              '</select>' +
-              '<select v-model="langToLocal">' +
-              '<option v-for="lang in supportedLanguages" v-bind:value="lang.code"> {{ lang.text }} </option>' +
-              '</select>' +
-            '</div>'
-    // created: function() {
-    //     translateApi.get_lang().then(result =>
-    //         result.json().then(data => {
-    //                 data.forEach(lang => this.supportedLanguages.push(lang));
-    //                 // console.log(data)
-    //                 // data.forEach (lang => this.langToLocal.push(lang))
-    //             }
-    //         )
-    //     )
-    // }
+                '<div>' +
+                    '<select v-model="langFromLocal" >' +
+                        '<option v-on:click="" v-for="lang in Languages" v-bind:value="lang.code"> {{ lang.desc }} </option>' +
+                    '</select>' +
+                '</div>' +
+                '<div>' +
+                    '<select v-model="langToLocal">' +
+                        '<option v-for="lang in LanguagesTo" v-bind:value="lang.code"> {{ lang.desc }} </option>' +
+                    '</select>' +
+                '</div>' +
+            '</div>',
+  created: function() {
+    translateApi.get_lang().then(result =>
+        result.json().then(data => {
+                data.forEach(
+                    lang => {
+                        this.Languages.push(lang);
+                        this.LanguagesTo.push(lang);
+                    }
+                )
+            }
+        )
+    )
+  }
 });
 
-Vue.component('translate-form', {
-    props: ['supportedLanguages', 'langFrom', 'langTo'/*, 'text', 'translatedText'*/],
+Vue.component( 'translate-form', {
+    // props:[ 'langFrom', 'langTo' ],
     // template: '<div> {{ supportedLanguages }} </div>'
     // data: function() {
     //   return {
@@ -104,36 +91,41 @@ Vue.component('translate-form', {
     //       translatedText: ''
     //   }
     // },
+    data:function () {
+        return {
+            langFrom: 'ru',
+            langTo: 'en'
+        }
+    },
     template: '<div>' +
-            '<languages :supportedLanguages="supportedLanguages" :langFrom="langFrom" :langTo="langTo"/>' +
-            // '<translate-from :text="text" :langFrom="langFrom" :langTo="langTo"/>'+
-            '<translate-from :langFrom="langFrom" :langTo="langTo"/>'+
-            // '<translate-result :translatedText="translatedText"/>'+
-        '</div>'
+                '<language-form :langFrom="langFrom" :langTo="langTo"/>' +
+                '<translate :langFrom="langFrom" :langTo="langTo"/>'+
+              '</div>'
 });
 
 var app = new Vue({
     el: '#app',
-    template: '<translate-form :supportedLanguages="supportedLanguages" :langFrom="langFrom" :langTo="langTo"/>',
-    data: {
-        langFrom: 'ru',
-        langTo: 'en',
-        supportedLanguages: [
-            { code: 'ru', text:'Русский'},
-            { code: 'en', text:'Английский'},
-            { code: 'sl', text:'Словенский'}
-        ]
-    },
-    methods:{
-        pullSupportedLanguages(){
-            translateApi.get_lang().then(result =>
-                result.json().then(data =>
-                    data.forEach(lang => this.supportedLanguages.push(lang))
-                    // console.log(data)
-                )
-            )
-        }
-    },
+    template: '<translate-form />'
+    // template: '<translate-form :Languages="Languages" :langFrom="langFrom" :langTo="langTo"/>',
+    // data: {
+    //     langFrom: 'ru',
+    //     langTo: 'en'
+    //     // Languages: []
+            // { code: 'ru', text:'Русский'},
+            // { code: 'en', text:'Английский'},
+            // { code: 'sl', text:'Словенский'}
+        // ]
+    // }
+    // methods:{
+    //     pullSupportedLanguages(){
+    //         translateApi.get_lang().then(result =>
+    //             result.json().then(data =>
+    //                 data.forEach(lang => this.supportedLanguages.push(lang))
+    //                 // console.log(data)
+    //             )
+    //         )
+    //     }
+    // },
     // created: function() {
     //     this.pullSupportedLanguages()
     // }

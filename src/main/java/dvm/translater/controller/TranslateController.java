@@ -35,17 +35,17 @@ public class TranslateController {
 
     private boolean serviceAvailable = false;
 
-    private List<Map <String, String>> languageList = new ArrayList<>() {{
+    private List<Map <String, Object>> languages = new ArrayList<>() {{
         add(new HashMap<>() {{
-            put("lang", "ru");
+            put("code", "ru");
             put("desc", "Russian");
         }});
         add(new HashMap<>() {{
-            put("lang", "en");
+            put("code", "en");
             put("desc", "English");
         }});
         add(new HashMap<>() {{
-            put("lang", "sl");
+            put("code", "sl");
             put("desc", "Slovenian");
         }});
     }};
@@ -116,9 +116,9 @@ public class TranslateController {
 //            & [ui=<код языка>]
 //            & [callback=<имя callback-функции>]
     @GetMapping(value = "/get_lang")
-    public List<Map<String, String>> getSupportedLanguages() {
+    public List<Map<String, Object>> getLanguages() {
 
-        return languageList;
+        return languages;
 //        return languagesRepo.findAll();
 //        return stringToMap(request(String.format(API_URL_GET_SUPPORTED_LANG,API_KEY, "ru")));
     }
