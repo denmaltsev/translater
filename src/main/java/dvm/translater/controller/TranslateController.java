@@ -35,16 +35,16 @@ public class TranslateController {
 
     private boolean serviceAvailable = false;
 
-    private List<Map <String, Object>> languages = new ArrayList<>() {{
-        add(new HashMap<>() {{
+    private List<Map <String, Object>> languages = new ArrayList<Map<String, Object>>() {{
+        add(new HashMap<String, Object>() {{
             put("code", "ru");
             put("desc", "Russian");
         }});
-        add(new HashMap<>() {{
+        add(new HashMap<String, Object>() {{
             put("code", "en");
             put("desc", "English");
         }});
-        add(new HashMap<>() {{
+        add(new HashMap<String, Object>() {{
             put("code", "sl");
             put("desc", "Slovenian");
         }});
@@ -137,7 +137,7 @@ public class TranslateController {
             @RequestParam (name = "text") String text
     ) throws IOException {
 //        String encodedText = URLEncoder.encode(text, StandardCharsets.UTF_8);
-        return stringToMap(request(String.format(API_URL_TRANSLATE, API_KEY, URLEncoder.encode(text, StandardCharsets.UTF_8), src, dst)));
+        return stringToMap(request(String.format(API_URL_TRANSLATE, API_KEY, URLEncoder.encode(text, String.valueOf(StandardCharsets.UTF_8)), src, dst)));
     }
 
 //    https://translate.yandex.net/api/v1.5/tr.json/detect
